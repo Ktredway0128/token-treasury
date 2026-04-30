@@ -5,39 +5,36 @@ const path = require("path");
 async function main() {
     console.log("Network:", hre.network.name);
 
-    let owners;
+    let owner;
     let deployer;
 
     if (hre.network.name === "sepolia") {
         [deployer] = await hre.ethers.getSigners();
-        owners = [
-            "0x51782f68362dda6873dB835153DDC2Dc7c92A514",
-            "0xB6266E4Fd8e161A702c3c87fDC67C418bF941D90",
-            "0xad08767a27bdbfE65d1D84F2ea79fa62A3009E9F"
-        ];
+        // Multisig address — deploy multisig first and paste address here
+        owner = "0x0000000000000000000000000000000000000000";
     } else {
         [deployer] = await hre.ethers.getSigners();
-        const [, owner2, owner3] = await hre.ethers.getSigners();
-        owners = [deployer.address, owner2.address, owner3.address];
+        owner = deployer.address;
     }
 
-    console.log("Deploying MultiSigWallet with account:", deployer.address);
+    console.log("Deploying Treasury with account:", deployer.address);
+    console.log("Treasury owner:", owner);
 
-    const required = 2;
+    const treasuryName = "Token Treasury";
 
-    const MultiSigWallet = await hre.ethers.getContractFactory("MultiSigWallet");
-    const multiSig = await MultiSigWallet.deploy(owners, required);
-    await multiSig.deployed();
+    const Treasury = await hre.ethers.getContractFactory("Treasury");
+    const treasury = await Treasury.deploy(owner, treasuryName);
+    await treasury.deployed();
 
-    console.log("MultiSigWallet deployed to:", multiSig.address);
-    console.log("Owners:", owners);
-    console.log("Required approvals:", required);
+    console.log("Treasury deployed to:", treasury.address);
+    console.log("Owner:", owner);
+    console.log("Name:", treasuryName);
 
     const deploymentInfo = {
-        MultiSigWallet: {
-            address: multiSig.address,
-            owners: owners,
-            required: required,
+        Treasury: {
+            address: treasury.address,
+            owner: owner,
+            name: treasuryName,
         }
     };
 
@@ -51,12 +48,12 @@ async function main() {
 
     if (hre.network.name === "sepolia") {
         console.log("Waiting for block confirmations...");
-        await multiSig.deployTransaction.wait(6);
+        await treasury.deployTransaction.wait(6);
 
         console.log("Verifying contract on Etherscan...");
         await hre.run("verify:verify", {
-            address: multiSig.address,
-            constructorArguments: [owners, required],
+            address: treasury.address,
+            constructorArguments: [owner, treasuryName],
         });
 
         console.log("Contract verified on Etherscan");
