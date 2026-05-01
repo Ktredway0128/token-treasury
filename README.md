@@ -223,9 +223,9 @@ Verifies the contract on Etherscan
 
 | Contract | Address | Etherscan |
 |----------|---------|-----------|
-| MultiSigWallet | DEPLOY_ADDRESS | ETHERSCAN_LINK |
+| MultiSigWallet | 0x380923344A792D3D63a18172Cc16568b8a1FE9cF | https://sepolia.etherscan.io/address/0x380923344A792D3D63a18172Cc16568b8a1FE9cF#code |
 
-Deployed: TBD
+Deployed: 2026/5/01
 
 
 ## SECURITY PRACTICES
