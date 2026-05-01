@@ -11,7 +11,7 @@ async function main() {
     if (hre.network.name === "sepolia") {
         [deployer] = await hre.ethers.getSigners();
         // Multisig address — deploy multisig first and paste address here
-        owner = "0x0000000000000000000000000000000000000000";
+        owner = "0xdF102938A7E1a9b387f70a229C8D2D43f5663368";
     } else {
         [deployer] = await hre.ethers.getSigners();
         owner = deployer.address;
