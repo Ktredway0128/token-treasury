@@ -14,7 +14,7 @@ async function main() {
         owner = "0xdF102938A7E1a9b387f70a229C8D2D43f5663368";
     } else {
         [deployer] = await hre.ethers.getSigners();
-        owner = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // multisig contract address on localhost
+        owner = deployer.address;
     }
 
     console.log("Deploying Treasury with account:", deployer.address);
