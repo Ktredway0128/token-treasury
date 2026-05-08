@@ -1,4 +1,4 @@
-# TOKEN MULTISIG WALLET CONTRACT
+# TOKEN TREASURY CONTRACT
 
 [![Verified on Etherscan](https://img.shields.io/badge/Etherscan-Verified-brightgreen)](https://sepolia.etherscan.io/address/0x380923344A792D3D63a18172Cc16568b8a1FE9cF#code)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
@@ -7,82 +7,82 @@
 
 Built by [Tredway Development](https://tredwaydev.com) — professional Solidity smart contract packages for Web3 companies.
 
-A secure and production-ready multi-signature wallet contract built with Solidity, OpenZeppelin, and Hardhat.
+A secure and production-ready treasury contract built with Solidity, OpenZeppelin, and Hardhat.
 
 > ⚠️ These contracts have not been professionally audited. A full security audit is strongly recommended before any mainnet deployment.
 
-This project allows multiple owners to collectively control contract execution. No single wallet can submit and execute a transaction alone — a configurable threshold of approvals is required before any action is taken.
+This project allows projects to hold ETH and ERC-20 tokens in a secure on-chain vault. Only the designated owner — typically a multisig wallet — can withdraw funds. Anyone can deposit. The contract is the authority.
 
 Smart contract development
 Automated testing
 Deployment scripting
 Security best practices
 
-This contract is part of the Tredway Development full token suite, which includes token launch, vesting, airdrop, staking, crowdsale, governance, and multisig infrastructure.
+This contract is part of the Tredway Development full token suite, which includes token launch, vesting, airdrop, staking, crowdsale, governance, liquidity lock, multisig wallet, and treasury infrastructure.
 
 ## DASHBOARD
 
-Live dashboard: [token-multisig-dashboard.netlify.app](https://token-multisig-dashboard.netlify.app)
+Live dashboard: [token-treasury-dashboard.netlify.app](https://token-treasury-dashboard.netlify.app)
 
-Dashboard repository: [token-multisig-dashboard](https://github.com/Ktredway0128/token-multisig-dashboard)
+Dashboard repository: [token-treasury-dashboard](https://github.com/Ktredway0128/token-treasury-dashboard)
 
 
 ## PROJECT GOALS
 
-The purpose of this project is to give Web3 projects a trustless way to manage shared control over smart contracts and protocol actions.
+The purpose of this project is to give Web3 projects a secure, trustless vault for holding and managing project funds.
 
-The contract includes the core features required by a production multisig wallet:
+The contract includes the core features required by a production treasury:
 
-Multi-owner transaction approval
-Configurable approval threshold
-Transaction submission and queuing
-Approval revocation before execution
-Reentrancy protected execution
+ETH and ERC-20 token deposits from any address
+Owner-only withdrawals
+Real-time balance visibility
+ReentrancyGuard on all state-changing functions
+SafeERC20 for all token transfers
 
 
 ## SMART CONTRACT FEATURES
 
-MULTI-OWNER CONTROL
+ETH DEPOSITS
 
-Transactions require a configurable number of owner approvals before execution. No single wallet has unilateral control regardless of their role in the project.
+Anyone can send ETH directly to the treasury contract address. The receive function catches it automatically and emits an ETHDeposited event. No deposit form or function call required.
 
-CONFIGURABLE THRESHOLD
+TOKEN DEPOSITS
 
-The required number of approvals is set at deployment. A 2 of 3 or 3 of 5 configuration can be chosen to match the team structure of any project.
+Anyone can deposit any ERC-20 token into the treasury using the depositToken function. The dashboard automatically previews the token name and symbol before deposit.
 
-TRANSACTION QUEUING
+ETH WITHDRAWALS
 
-Proposed transactions are stored on chain with their destination, value, and encoded call data. Owners can review, approve, or revoke at any time before execution.
+Only the treasury owner can withdraw ETH. The owner specifies a destination address and amount. The contract validates the balance before executing the transfer.
 
-APPROVAL REVOCATION
+TOKEN WITHDRAWALS
 
-Any owner can revoke their approval before a transaction is executed. If approvals drop below the threshold the transaction cannot proceed until the threshold is met again.
+Only the treasury owner can withdraw ERC-20 tokens. The owner specifies the token address, destination address, and amount. The contract validates the token balance before executing the transfer.
 
-ARBITRARY EXECUTION
+BALANCE VISIBILITY
 
-The multisig can call any function on any contract by encoding the call data into the transaction. This makes it suitable as the owner or admin of any contract in the suite.
+The getETHBalance function returns the current ETH balance. The getTokenBalance function returns the balance of any ERC-20 token by address. Both are publicly readable.
+
+OWNER CONTROL
+
+The owner address is set at deployment and cannot be changed. In production the owner is a multisig wallet — no single person can move funds without multi-owner consensus.
 
 REENTRANCY PROTECTION
 
-The contract uses OpenZeppelin's ReentrancyGuard on the execute function. State is updated before any external call to prevent reentrancy attacks.
-
-DUPLICATE OWNER PREVENTION
-
-The constructor validates that no address appears twice in the owner list and that no zero address is included.
+The contract uses OpenZeppelin's ReentrancyGuard on all state-changing functions. State is updated before any external call to prevent reentrancy attacks.
 
 EVENT TRACKING
 
 The contract emits events for every major action:
 
-TransactionSubmitted
+ETHDeposited
 
-TransactionApproved
+TokenDeposited
 
-ApprovalRevoked
+ETHWithdrawn
 
-TransactionExecuted
+TokenWithdrawn
 
-Events are indexed by transaction index and owner address for efficient frontend filtering.
+Events are indexed by sender and token address for efficient frontend filtering.
 
 
 ## TECHNOLOGY STACK
@@ -105,50 +105,56 @@ Sepolia Test Network – Deployment environment
 ## PROJECT STRUCTURE
 
 contracts/
-    MultiSigWallet.sol
+    Treasury.sol
+    SampleToken.sol
 
 scripts/
-    deploy-multisig.js
+    deploy-treasury.js
+    deploy-token.js
 
 test/
-    MultiSigWallet.test.js
+    Treasury.test.js
 
 hardhat.config.js
 .env
 
 CONTRACTS
 
-MultiSigWallet.sol is the core deliverable. No auxiliary token contract is required — the multisig operates independently of any specific token standard.
+Treasury.sol is the core deliverable. SampleToken.sol is included for local testing only.
 
 SCRIPTS
 
-deploy-multisig.js deploys MultiSigWallet to the target network, saves deployment info to a JSON file, and verifies on Etherscan when deploying to Sepolia.
+deploy-treasury.js deploys Treasury to the target network, saves deployment info to a JSON file, and verifies on Etherscan when deploying to Sepolia.
+
+deploy-token.js deploys a test ERC-20 token for local development and testing.
 
 TESTS
 
-Contains 28 automated tests verifying all major contract behaviors and edge cases.
+Contains 29 automated tests verifying all major contract behaviors and edge cases.
 
 
 ## SMART CONTRACT ARCHITECTURE
 
-The MultiSigWallet contract extends OpenZeppelin's ReentrancyGuard and implements the following:
+The Treasury contract extends OpenZeppelin's ReentrancyGuard and implements the following:
 
-ReentrancyGuard – Prevents reentrancy attacks on execute
+ReentrancyGuard — Prevents reentrancy attacks on all state-changing functions
 
-Custom owner validation – Built without OpenZeppelin Ownable to support multi-owner consensus logic
+SafeERC20 — Safe wrapper for all ERC-20 token transfers
 
-Dual owner tracking – Uses both an address array for iteration and a mapping for O(1) ownership lookups
+Custom owner validation — Single owner address set at deployment, intended to be a multisig
 
-Each transaction is stored as a struct containing the destination address, ETH value, call data, execution status, and approval count. Transactions are organized in a mapping from transaction index to Transaction struct, exposed through controlled view functions.
+receive() — Native ETH deposit handler requiring no function call
+
+The treasury stores no internal balance tracking. ETH balance is read directly from address(this).balance. Token balances are read directly from each ERC-20 contract via balanceOf. This keeps the contract minimal and trustless.
 
 
 ## INSTALLATION
 
 ### CLONE THE REPOSITORY:
 
-git clone https://github.com/Ktredway0128/token-multisig
+git clone https://github.com/Ktredway0128/token-treasury
 
-cd token-multisig
+cd token-treasury
 
 ### INSTALL DEPENDENCIES:
 
@@ -164,27 +170,59 @@ npx hardhat test
 
 ### THE TESTS VALIDATE:
 
-Correct owner and threshold setup at deployment
+Correct owner and name setup at deployment
 
-Rejection of invalid deployment configurations
+Rejection of zero address owner
 
-Transaction submission by owners
+ETH deposit via receive function
 
-Rejection of submission by non owners
+ETHDeposited event emission
 
-Approval tracking per owner
+ETH deposit from any address
 
-Double approval prevention
+ERC-20 token deposit with approval
 
-Approval revocation
+TokenDeposited event emission
 
-Execution after threshold is met
+Rejection of zero amount token deposit
 
-Execution rejection below threshold
+Rejection of zero address token deposit
 
-Double execution prevention
+Owner ETH withdrawal
 
-Edge case — revoke drops below threshold before execution
+ETHWithdrawn event emission
+
+Rejection of ETH withdrawal by non-owner
+
+Rejection of zero ETH withdrawal
+
+Rejection of ETH withdrawal exceeding balance
+
+Rejection of ETH withdrawal to zero address
+
+Owner token withdrawal
+
+TokenWithdrawn event emission
+
+Rejection of token withdrawal by non-owner
+
+Rejection of zero token withdrawal
+
+Rejection of token withdrawal exceeding balance
+
+Rejection of token withdrawal to zero address
+
+Rejection of token withdrawal with zero token address
+
+Multiple ETH deposits accumulate correctly
+
+Multiple token deposits accumulate correctly
+
+Full ETH withdrawal empties balance
+
+Full token withdrawal empties balance
+
+Treasury holds ETH and tokens simultaneously
 
 
 ## ENVIRONMENT SETUP
@@ -202,7 +240,7 @@ ETHERSCAN_API_KEY=YOUR_ETHERSCAN_API_KEY
 
 To deploy the contract to Sepolia:
 
-npx hardhat run scripts/deploy-multisig.js --network sepolia
+npx hardhat run scripts/deploy-treasury.js --network sepolia
 
 The deployment script performs the following steps:
 
@@ -210,7 +248,7 @@ Retrieves the deployer wallet
 
 Creates the contract factory
 
-Deploys MultiSigWallet with owner addresses and required threshold
+Deploys Treasury with the owner address and name
 
 Saves deployment info to deployments/sepolia.json
 
@@ -223,37 +261,39 @@ Verifies the contract on Etherscan
 
 | Contract | Address | Etherscan |
 |----------|---------|-----------|
-| MultiSigWallet | 0x380923344A792D3D63a18172Cc16568b8a1FE9cF | https://sepolia.etherscan.io/address/0x380923344A792D3D63a18172Cc16568b8a1FE9cF#code |
+| Treasury | 0x380923344A792D3D63a18172Cc16568b8a1FE9cF | https://sepolia.etherscan.io/address/0x380923344A792D3D63a18172Cc16568b8a1FE9cF#code |
 
-Deployed: 2026/5/01
+Deployed: 2026/05/01
 
 
 ## SECURITY PRACTICES
 
-The contract uses well-established patterns from OpenZeppelin and Gnosis Safe including:
+The contract uses well-established patterns from OpenZeppelin including:
 
-ReentrancyGuard on the execute function
+ReentrancyGuard on all state-changing functions
 
-Checks-effects-interactions pattern — state updated before external call
+SafeERC20 for all token transfers
 
-Dual owner tracking for gas efficient validation
+Checks-effects-interactions pattern — requires checked before external calls
 
-No single point of control — all actions require multi-owner consensus
+Owner-only access on all withdrawal functions
 
-These are common practices used in production smart contracts.
+No internal balance tracking — reads directly from EVM and ERC-20 contracts
+
+In production the owner should be a multisig wallet so no single address has unilateral withdrawal access.
 
 
 ## EXAMPLE USE CASES
 
-This multisig wallet contract is suitable for:
+This treasury contract is suitable for:
 
-Protocol teams requiring shared control over admin functions
+Protocol teams holding ETH and tokens raised from a crowdsale
 
-DAOs needing trustless multi-owner execution
+DAOs storing community funds with multisig-controlled access
 
-Projects transferring contract ownership to a multisig for security
+Projects holding team token allocations before distribution
 
-Any team handling treasury or privileged contract actions
+Any team that needs a secure on-chain vault with transparent balances
 
 
 ## FULL TOKEN SUITE
@@ -273,6 +313,7 @@ This contract is part of the Tredway Development token suite:
 | NftMembership | ERC-721 membership NFT |
 | LiquidityLock | LP token time lock |
 | MultiSigWallet | Multi-owner transaction approval |
+| Treasury | ETH and ERC-20 fund vault |
 
 
 ## AUTHOR
